@@ -28,21 +28,21 @@ func treeInsert(tree *BTree, node BNode, key []byte, val []byte) BNode {
 	newNode := BNode{data: make([]byte, 2*BTREE_PAGE_SIZE)}
 
 	// where to insert the key?
-	idx := nodeLookupLE(node, key)
+	index := findLessEqualNode(node, key)
 	// act depending on the node type
 	switch node.getType() {
 	case BNODE_LEAF:
-		// leaf, node.getKey(idx) <= key
-		if bytes.Equal(key, node.getKey(idx)) {
+		// leaf, node.getKey(index) <= key
+		if bytes.Equal(key, node.getKey(index)) {
 			// found the key, update it.
-			leafUpdate(newNode, node, idx, key, val)
+			leafUpdate(newNode, node, index, key, val)
 		} else {
 			// insert it after the position.
-			leafInsert(newNode, node, idx+1, key, val)
+			leafInsert(newNode, node, index+1, key, val)
 		}
 	case BNODE_NODE:
 		// internal node, insert it to a kid node.
-		nodeInsert(tree, newNode, node, idx, key, val)
+		nodeInsert(tree, newNode, node, index, key, val)
 	default:
 		panic("bad node!")
 	}
@@ -51,7 +51,7 @@ func treeInsert(tree *BTree, node BNode, key []byte, val []byte) BNode {
 
 // returns the first kid node whose range intersects the key. (kid[i] <= key)
 // TODO: bisect
-func nodeLookupLE(node BNode, key []byte) uint16 {
+func findLessEqualNode(node BNode, key []byte) uint16 {
 	nkeys := node.numberOfKeys()
 	found := uint16(0)
 	// the first key is a copy from the parent node,
