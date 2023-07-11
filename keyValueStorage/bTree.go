@@ -14,15 +14,19 @@ type BTree struct {
 	del func(uint64)       // deallocate a page
 }
 
+var tree *BTree
+
 func init() {
 	node1max := HEADER + 8 + 2 + 4 + BTREE_MAX_KEY_SIZE + BTREE_MAX_VAL_SIZE
 	assert(node1max <= BTREE_PAGE_SIZE)
+	// todo init tree
+	tree = nil
 }
 
 // insert a KV into a node, the result might be split into 2 nodes.
 // the caller is responsible for deallocating the input node
 // and splitting and allocating result nodes.
-func treeInsert(tree *BTree, node BNode, key []byte, val []byte) BNode {
+func treeInsert(node BNode, key []byte, val []byte) BNode {
 	// the result node.
 	// it's allowed to be bigger than 1 page and will be split if so
 	newNode := BNode{data: make([]byte, 2*BTREE_PAGE_SIZE)}
@@ -42,7 +46,7 @@ func treeInsert(tree *BTree, node BNode, key []byte, val []byte) BNode {
 		}
 	case BNODE_NODE:
 		// internal node, insert it to a kid node.
-		nodeInsert(tree, newNode, node, index, key, val)
+		nodeInsert(newNode, node, index, key, val)
 	default:
 		panic("bad node!")
 	}
@@ -79,28 +83,22 @@ func leafInsert(
 	nodeAppendRange(new, old, idx+1, idx, old.numberOfKeys()-idx)
 }
 
-func leafUpdate(
-	new BNode, old BNode, idx uint16,
-	key []byte, val []byte,
-) {
+func leafUpdate(new BNode, old BNode, idx uint16, key []byte, val []byte) {
 	//todo
 }
 
 // part of the treeInsert(): KV insertion to an internal node
-func nodeInsert(
-	tree *BTree, new BNode, node BNode, idx uint16,
-	key []byte, val []byte,
-) {
+func nodeInsert(new BNode, node BNode, idx uint16, key []byte, val []byte) {
 	// get and deallocate the kid node
 	kptr := node.getPointer(idx)
 	knode := tree.get(kptr)
 	tree.del(kptr)
 	// recursive insertion to the kid node
-	knode = treeInsert(tree, knode, key, val)
+	knode = treeInsert(knode, key, val)
 	// split the result
 	nsplit, splited := nodeSplit3(knode)
 	// update the kid links
-	nodeReplaceKidN(tree, new, node, idx, splited[:nsplit]...)
+	nodeReplaceKidN(new, node, idx, splited[:nsplit]...)
 }
 
 // split a bigger-than-allowed node into two.
@@ -131,10 +129,7 @@ func nodeSplit3(old BNode) (uint16, [3]BNode) {
 }
 
 // copy multiple KVs into the position
-func nodeAppendRange(
-	new BNode, old BNode,
-	dstNew uint16, srcOld uint16, n uint16,
-) {
+func nodeAppendRange(new BNode, old BNode, dstNew uint16, srcOld uint16, n uint16) {
 	assert(srcOld+n <= old.numberOfKeys())
 	assert(dstNew+n <= new.numberOfKeys())
 	if n == 0 {
@@ -173,10 +168,7 @@ func nodeAppendKV(new BNode, idx uint16, ptr uint64, key []byte, val []byte) {
 }
 
 // replace a link with multiple links
-func nodeReplaceKidN(
-	tree *BTree, new BNode, old BNode, idx uint16,
-	kids ...BNode,
-) {
+func nodeReplaceKidN(new BNode, old BNode, idx uint16, kids ...BNode) {
 	inc := uint16(len(kids))
 	new.setHeader(BNODE_NODE, old.numberOfKeys()+inc-1)
 	nodeAppendRange(new, old, 0, 0, idx)
