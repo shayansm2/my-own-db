@@ -85,14 +85,14 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 		// leaf, node.getKey(index) <= key
 		if bytes.Equal(key, node.getKey(index)) {
 			// found the key, update it.
-			leafUpdate(newNode, node, index, key, val)
+			leafUpdate(&newNode, node, index, key, val)
 		} else {
 			// insert it after the position.
-			leafInsert(newNode, node, index+1, key, val)
+			leafInsert(&newNode, node, index+1, key, val)
 		}
 	case BNodeInternal:
 		// internal node, insert it to a kid node.
-		nodeInsert(newNode, node, index, key, val)
+		nodeInsert(&newNode, node, index, key, val)
 	default:
 		panic("bad node!")
 	}
@@ -101,19 +101,19 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 }
 
 // add a new key to a leaf node
-func leafInsert(new BNode, old BNode, idx uint16, key []byte, val []byte) {
+func leafInsert(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
 	new.setHeader(BNodeLeaf, old.numberOfKeys()+1)
 	nodeAppendRange(new, old, 0, 0, idx)
 	nodeAppendKV(new, idx, 0, key, val)
 	nodeAppendRange(new, old, idx+1, idx, old.numberOfKeys()-idx)
 }
 
-func leafUpdate(new BNode, old BNode, idx uint16, key []byte, val []byte) {
+func leafUpdate(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
 	//todo
 }
 
 // part of the treeInsert(): KV insertion to an internal node
-func nodeInsert(new BNode, node BNode, idx uint16, key []byte, val []byte) {
+func nodeInsert(new *BNode, node BNode, idx uint16, key []byte, val []byte) {
 	// get and deallocate the kid node
 	kptr := node.getPointer(idx)
 	knode := tree.get(kptr)
@@ -154,7 +154,7 @@ func nodeSplit3(old BNode) (uint16, [3]BNode) {
 }
 
 // copy multiple KVs into the position
-func nodeAppendRange(new BNode, old BNode, dstNew uint16, srcOld uint16, n uint16) {
+func nodeAppendRange(new *BNode, old BNode, dstNew uint16, srcOld uint16, n uint16) {
 	assert(srcOld+n <= old.numberOfKeys())
 	assert(dstNew+n <= new.numberOfKeys())
 	if n == 0 {
@@ -179,7 +179,7 @@ func nodeAppendRange(new BNode, old BNode, dstNew uint16, srcOld uint16, n uint1
 }
 
 // copy a KV into the position
-func nodeAppendKV(new BNode, idx uint16, ptr uint64, key []byte, val []byte) {
+func nodeAppendKV(new *BNode, idx uint16, ptr uint64, key []byte, val []byte) {
 	// pointers
 	new.setPointer(idx, ptr)
 	// Key-Values
@@ -193,7 +193,7 @@ func nodeAppendKV(new BNode, idx uint16, ptr uint64, key []byte, val []byte) {
 }
 
 // replace a link with multiple links
-func nodeReplaceKidN(new BNode, old BNode, idx uint16, kids ...BNode) {
+func nodeReplaceKidN(new *BNode, old BNode, idx uint16, kids ...BNode) {
 	inc := uint16(len(kids))
 	new.setHeader(BNodeInternal, old.numberOfKeys()+inc-1)
 	nodeAppendRange(new, old, 0, 0, idx)
