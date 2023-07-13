@@ -33,6 +33,25 @@ func treeInsert(node BNode, key []byte, val []byte) BNode {
 	return insertIntoNode(node, key, val, index)
 }
 
+// returns the first kid node whose range intersects the key. (kid[i] <= key)
+// TODO: bisect
+func findLessEqualNode(node BNode, key []byte) uint16 {
+	nkeys := node.numberOfKeys()
+	found := uint16(0)
+	// the first key is a copy from the parent node,
+	// thus it's always less than or equal to the key.
+	for i := uint16(1); i < nkeys; i++ {
+		cmp := bytes.Compare(node.getKey(i), key)
+		if cmp <= 0 {
+			found = i
+		}
+		if cmp >= 0 {
+			break
+		}
+	}
+	return found
+}
+
 func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 	// the result node.
 	// it's allowed to be bigger than 1 page and will be split if so
@@ -56,25 +75,6 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 	}
 
 	return newNode
-}
-
-// returns the first kid node whose range intersects the key. (kid[i] <= key)
-// TODO: bisect
-func findLessEqualNode(node BNode, key []byte) uint16 {
-	nkeys := node.numberOfKeys()
-	found := uint16(0)
-	// the first key is a copy from the parent node,
-	// thus it's always less than or equal to the key.
-	for i := uint16(1); i < nkeys; i++ {
-		cmp := bytes.Compare(node.getKey(i), key)
-		if cmp <= 0 {
-			found = i
-		}
-		if cmp >= 0 {
-			break
-		}
-	}
-	return found
 }
 
 // add a new key to a leaf node
