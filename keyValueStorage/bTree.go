@@ -118,15 +118,15 @@ func leafNodeUpdate(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
 // part of the treeInsert(): KV insertion to an internal node
 func internalNodeInsert(new *BNode, node BNode, idx uint16, key []byte, val []byte) {
 	// get and deallocate the kid node
-	kptr := node.getPointer(idx)
-	knode := tree.get(kptr)
-	tree.del(kptr)
+	childPointer := node.getPointer(idx)
+	childNode := tree.get(childPointer)
+	tree.del(childPointer)
 	// recursive insertion to the kid node
-	knode = treeInsert(knode, key, val)
+	childNode = treeInsert(childNode, key, val)
 	// split the result
-	nsplit, splited := nodeSplit3(knode)
+	numberOfSplits, splitedNodes := nodeSplit3(childNode)
 	// update the kid links
-	nodeReplaceKidN(new, node, idx, splited[:nsplit]...)
+	nodeReplaceKidN(new, node, idx, splitedNodes[:numberOfSplits]...)
 }
 
 // split a bigger-than-allowed node into two.
