@@ -88,7 +88,7 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 			leafUpdate(&newNode, node, index, key, val)
 		} else {
 			// insert it after the position.
-			leafInsert(&newNode, node, index+1, key, val)
+			leafInsert(&newNode, node, index+1, key, val) // question: can it exceed the node size?
 		}
 	case BNodeInternal:
 		// internal node, insert it to a kid node.
@@ -154,28 +154,28 @@ func nodeSplit3(old BNode) (uint16, [3]BNode) {
 }
 
 // copy multiple KVs into the position
-func nodeAppendRange(new *BNode, old BNode, dstNew uint16, srcOld uint16, n uint16) {
-	assert(srcOld+n <= old.numberOfKeys())
-	assert(dstNew+n <= new.numberOfKeys())
-	if n == 0 {
+func nodeAppendRange(new *BNode, old BNode, newIndex uint16, oldIndex uint16, length uint16) {
+	assert(oldIndex+length <= old.numberOfKeys())
+	assert(newIndex+length <= new.numberOfKeys())
+	if length == 0 {
 		return
 	}
 
 	// pointers
-	for i := uint16(0); i < n; i++ {
-		new.setPointer(dstNew+i, old.getPointer(srcOld+i))
+	for i := uint16(0); i < length; i++ {
+		new.setPointer(newIndex+i, old.getPointer(oldIndex+i))
 	}
 	// offsets
-	dstBegin := new.getOffset(dstNew)
-	srcBegin := old.getOffset(srcOld)
-	for i := uint16(1); i <= n; i++ { // NOTE: the range is [1, n]
-		offset := dstBegin + old.getOffset(srcOld+i) - srcBegin
-		new.setOffset(dstNew+i, offset)
+	dstBegin := new.getOffset(newIndex)
+	srcBegin := old.getOffset(oldIndex)
+	for i := uint16(1); i <= length; i++ { // NOTE: the range is [1, length]
+		offset := dstBegin + old.getOffset(oldIndex+i) - srcBegin
+		new.setOffset(newIndex+i, offset)
 	}
 	// KVs
-	begin := old.kvPos(srcOld)
-	end := old.kvPos(srcOld + n)
-	copy(new.data[new.kvPos(dstNew):], old.data[begin:end])
+	begin := old.kvPos(oldIndex)
+	end := old.kvPos(oldIndex + length)
+	copy(new.data[new.kvPos(newIndex):], old.data[begin:end])
 }
 
 // copy a KV into the position
