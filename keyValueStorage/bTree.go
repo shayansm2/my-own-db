@@ -27,13 +27,17 @@ func init() {
 // the caller is responsible for deallocating the input node
 // and splitting and allocating result nodes.
 func treeInsert(node BNode, key []byte, val []byte) BNode {
+	// where to insert the key?
+	index := findLessEqualNode(node, key)
+	// act depending on the node type
+	return insertIntoNode(node, key, val, index)
+}
+
+func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 	// the result node.
 	// it's allowed to be bigger than 1 page and will be split if so
 	newNode := BNode{data: make([]byte, 2*BTREE_PAGE_SIZE)}
 
-	// where to insert the key?
-	index := findLessEqualNode(node, key)
-	// act depending on the node type
 	switch node.getType() {
 	case BNODE_LEAF:
 		// leaf, node.getKey(index) <= key
@@ -50,6 +54,7 @@ func treeInsert(node BNode, key []byte, val []byte) BNode {
 	default:
 		panic("bad node!")
 	}
+
 	return newNode
 }
 
