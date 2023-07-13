@@ -109,7 +109,10 @@ func leafInsert(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
 }
 
 func leafUpdate(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
-	//todo
+	new.setHeader(BNodeLeaf, old.numberOfKeys())
+	nodeAppendRange(new, old, 0, 0, idx)
+	nodeAppendKV(new, idx, 0, key, val)
+	nodeAppendRange(new, old, idx+1, idx+1, old.numberOfKeys()-idx-1)
 }
 
 // part of the treeInsert(): KV insertion to an internal node

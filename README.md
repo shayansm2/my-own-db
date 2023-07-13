@@ -9,3 +9,4 @@ todos:
 - [ ] write the db using LSM tree
 - [ ] better BNode: instead of using raw data as bytes, convert the raw data to a more readable object with multiple
   variables using builder pattern
+- [ ] write tests
