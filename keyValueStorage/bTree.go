@@ -17,8 +17,8 @@ type BTree struct {
 var tree *BTree
 
 func init() {
-	node1max := HEADER + 8 + 2 + 4 + BTREE_MAX_KEY_SIZE + BTREE_MAX_VAL_SIZE
-	assert(node1max <= BTREE_PAGE_SIZE)
+	node1max := HEADER + 8 + 2 + 4 + BtreeMaxKeySize + BtreeMaxValSize
+	assert(node1max <= BtreePageSize)
 	// todo init tree
 	tree = nil
 }
@@ -78,10 +78,10 @@ func bisectFindIndexLessEqual(node BNode, key []byte) uint16 {
 func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 	// the result node.
 	// it's allowed to be bigger than 1 page and will be split if so
-	newNode := BNode{data: make([]byte, 2*BTREE_PAGE_SIZE)}
+	newNode := BNode{data: make([]byte, 2*BtreePageSize)}
 
 	switch node.getType() {
-	case BNODE_LEAF:
+	case BNodeLeaf:
 		// leaf, node.getKey(index) <= key
 		if bytes.Equal(key, node.getKey(index)) {
 			// found the key, update it.
@@ -90,7 +90,7 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 			// insert it after the position.
 			leafInsert(newNode, node, index+1, key, val)
 		}
-	case BNODE_NODE:
+	case BNodeInternal:
 		// internal node, insert it to a kid node.
 		nodeInsert(newNode, node, index, key, val)
 	default:
@@ -101,11 +101,8 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 }
 
 // add a new key to a leaf node
-func leafInsert(
-	new BNode, old BNode, idx uint16,
-	key []byte, val []byte,
-) {
-	new.setHeader(BNODE_LEAF, old.numberOfKeys()+1)
+func leafInsert(new BNode, old BNode, idx uint16, key []byte, val []byte) {
+	new.setHeader(BNodeLeaf, old.numberOfKeys()+1)
 	nodeAppendRange(new, old, 0, 0, idx)
 	nodeAppendKV(new, idx, 0, key, val)
 	nodeAppendRange(new, old, idx+1, idx, old.numberOfKeys()-idx)
@@ -137,22 +134,22 @@ func nodeSplit2(left BNode, right BNode, old BNode) {
 
 // split a node if it's too big. the results are 1~3 nodes.
 func nodeSplit3(old BNode) (uint16, [3]BNode) {
-	if old.numberOfBytes() <= BTREE_PAGE_SIZE {
-		old.data = old.data[:BTREE_PAGE_SIZE]
+	if old.numberOfBytes() <= BtreePageSize {
+		old.data = old.data[:BtreePageSize]
 		return 1, [3]BNode{old}
 	}
-	left := BNode{make([]byte, 2*BTREE_PAGE_SIZE)} // might be split later
-	right := BNode{make([]byte, BTREE_PAGE_SIZE)}
+	left := BNode{make([]byte, 2*BtreePageSize)} // might be split later
+	right := BNode{make([]byte, BtreePageSize)}
 	nodeSplit2(left, right, old)
-	if left.numberOfBytes() <= BTREE_PAGE_SIZE {
-		left.data = left.data[:BTREE_PAGE_SIZE]
+	if left.numberOfBytes() <= BtreePageSize {
+		left.data = left.data[:BtreePageSize]
 		return 2, [3]BNode{left, right}
 	}
 	// the left node is still too large
-	leftleft := BNode{make([]byte, BTREE_PAGE_SIZE)}
-	middle := BNode{make([]byte, BTREE_PAGE_SIZE)}
+	leftleft := BNode{make([]byte, BtreePageSize)}
+	middle := BNode{make([]byte, BtreePageSize)}
 	nodeSplit2(leftleft, middle, left)
-	assert(leftleft.numberOfBytes() <= BTREE_PAGE_SIZE)
+	assert(leftleft.numberOfBytes() <= BtreePageSize)
 	return 3, [3]BNode{leftleft, middle, right}
 }
 
@@ -198,7 +195,7 @@ func nodeAppendKV(new BNode, idx uint16, ptr uint64, key []byte, val []byte) {
 // replace a link with multiple links
 func nodeReplaceKidN(new BNode, old BNode, idx uint16, kids ...BNode) {
 	inc := uint16(len(kids))
-	new.setHeader(BNODE_NODE, old.numberOfKeys()+inc-1)
+	new.setHeader(BNodeInternal, old.numberOfKeys()+inc-1)
 	nodeAppendRange(new, old, 0, 0, idx)
 	for i, node := range kids {
 		nodeAppendKV(new, idx+uint16(i), tree.new(node), node.getKey(0), nil)
