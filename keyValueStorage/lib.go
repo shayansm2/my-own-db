@@ -1,7 +1,20 @@
 package keyValueStorage
 
+type assertionArgs struct {
+	condition bool
+	message   string
+}
+
 func assert(condition bool) {
-	if !condition {
-		panic("assertion failed")
+	assertThat(assertionArgs{condition: condition})
+}
+
+func assertThat(args assertionArgs) {
+	if args.message == "" {
+		args.message = "assertion failed"
+	}
+
+	if !args.condition {
+		panic(args.message)
 	}
 }

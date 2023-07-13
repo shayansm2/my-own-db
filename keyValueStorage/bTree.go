@@ -28,13 +28,13 @@ func init() {
 // and splitting and allocating result nodes.
 func treeInsert(node BNode, key []byte, val []byte) BNode {
 	// where to insert the key?
-	index := findLessEqualNode(node, key)
+	index := bisectFindIndexLessEqual(node, key)
+	assertThat(assertionArgs{condition: index == findLessEqualNode(node, key), message: "bisect search is wrong"}) // todo remove this
 	// act depending on the node type
 	return insertIntoNode(node, key, val, index)
 }
 
 // returns the first kid node whose range intersects the key. (kid[i] <= key)
-// TODO: bisect
 func findLessEqualNode(node BNode, key []byte) uint16 {
 	nkeys := node.numberOfKeys()
 	found := uint16(0)
@@ -50,6 +50,29 @@ func findLessEqualNode(node BNode, key []byte) uint16 {
 		}
 	}
 	return found
+}
+
+func bisectFindIndexLessEqual(node BNode, key []byte) uint16 {
+	start, end := uint16(0), node.numberOfKeys()-1
+	for start <= end {
+		mid := start + (end-start)/2
+
+		compare := bytes.Compare(node.getKey(mid), key)
+
+		if compare == 0 {
+			return mid
+		}
+
+		if compare > 0 {
+			end = mid - 1
+		} else {
+			if end == start {
+				return mid
+			}
+			start = mid + 1
+		}
+	}
+	panic("no index found")
 }
 
 func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
