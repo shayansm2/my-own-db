@@ -116,17 +116,17 @@ func leafNodeUpdate(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
 }
 
 // part of the treeInsert(): KV insertion to an internal node
-func internalNodeInsert(new *BNode, node BNode, idx uint16, key []byte, val []byte) {
-	// get and deallocate the kid node
-	childPointer := node.getPointer(idx)
+func internalNodeInsert(new *BNode, old BNode, idx uint16, key []byte, val []byte) {
+	// get and deallocate the kid old
+	childPointer := old.getPointer(idx)
 	childNode := tree.get(childPointer)
 	tree.del(childPointer)
-	// recursive insertion to the kid node
+	// recursive insertion to the kid old
 	childNode = treeInsert(childNode, key, val)
 	// split the result
 	numberOfSplits, splitedNodes := splitNode(childNode)
 	// update the kid links
-	nodeReplaceKidN(new, node, idx, splitedNodes[:numberOfSplits]...)
+	nodeReplaceChildren(new, old, idx, splitedNodes[:numberOfSplits]...)
 }
 
 // split a node if it's too big. the results are 1~3 nodes.
@@ -213,12 +213,12 @@ func nodeAppendKV(new *BNode, idx uint16, ptr uint64, key []byte, val []byte) {
 }
 
 // replace a link with multiple links
-func nodeReplaceKidN(new *BNode, old BNode, idx uint16, kids ...BNode) {
-	inc := uint16(len(kids))
-	new.setHeader(BNodeInternal, old.numberOfKeys()+inc-1)
+func nodeReplaceChildren(new *BNode, old BNode, idx uint16, children ...BNode) {
+	numberOfChildren := uint16(len(children))
+	new.setHeader(BNodeInternal, old.numberOfKeys()+numberOfChildren-1)
 	nodeAppendRange(new, old, 0, 0, idx)
-	for i, node := range kids {
-		nodeAppendKV(new, idx+uint16(i), tree.new(node), node.getKey(0), nil)
+	for i, child := range children {
+		nodeAppendKV(new, idx+uint16(i), tree.new(child), child.getKey(0), nil)
 	}
-	nodeAppendRange(new, old, idx+inc, idx+1, old.numberOfKeys()-(idx+1))
+	nodeAppendRange(new, old, idx+numberOfChildren, idx+1, old.numberOfKeys()-(idx+1))
 }

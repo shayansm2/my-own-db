@@ -19,7 +19,8 @@
 		{"type":"text","text":"insert key value into tree\n- tree\n- key\n- value","id":"763c32ef7b654585","x":-640,"y":-680,"width":250,"height":180},
 		{"id":"6bb3038c7e7cec5d","x":-60,"y":855,"width":337,"height":50,"type":"text","text":"`node = node.child`"},
 		{"id":"3d1eea40eb29dfd0","x":-90,"y":1002,"width":397,"height":50,"type":"text","text":"`newNode = treeInsert(node, key, val)`"},
-		{"id":"c5f06f66c02c30c8","x":-128,"y":1140,"width":474,"height":176,"type":"text","text":"split the new node if it's larger than page size\n- newNode\n\n-> []nodes\n`func splitNode(node BNode) (uint16, [3]BNode) {`"}
+		{"id":"c5f06f66c02c30c8","x":-128,"y":1140,"width":474,"height":176,"type":"text","text":"split the new node if it's larger than page size\n- newNode\n\n-> []nodes\n`func splitNode(node BNode) (uint16, [3]BNode) {`"},
+		{"id":"913581b00851fd37","x":-280,"y":1400,"width":777,"height":226,"type":"text","text":"append the splited notes to the parent node\n- newNode\n- oldNode\n- index\n- []childNodes\n\n`func nodeReplaceChildren(new *BNode, old BNode, idx uint16, children ...BNode) {`"}
 	],
 	"edges":[
 		{"id":"24ff12bf4ed0c83c","fromNode":"271f1c3d69891ee3","fromSide":"bottom","toNode":"8496c0ae0c6614e4","toSide":"top"},
@@ -42,6 +43,7 @@
 		{"id":"97cbcf3e45aaf631","fromNode":"6bb3038c7e7cec5d","fromSide":"bottom","toNode":"3d1eea40eb29dfd0","toSide":"top"},
 		{"id":"0b62e758134ab198","fromNode":"3d1eea40eb29dfd0","fromSide":"bottom","toNode":"c5f06f66c02c30c8","toSide":"top"},
 		{"id":"94d119f852b9ae83","fromNode":"01243a84990a2f84","fromSide":"left","toNode":"6bb3038c7e7cec5d","toSide":"top"},
-		{"id":"b8fccd950ee3ec31","fromNode":"3d1eea40eb29dfd0","fromSide":"left","toNode":"a0dc0eb38de64fb4","toSide":"bottom","toEnd":"none","color":"5","label":"="}
+		{"id":"b8fccd950ee3ec31","fromNode":"3d1eea40eb29dfd0","fromSide":"left","toNode":"a0dc0eb38de64fb4","toSide":"bottom","toEnd":"none","color":"5","label":"="},
+		{"id":"7edd30985bc30d87","fromNode":"c5f06f66c02c30c8","fromSide":"bottom","toNode":"913581b00851fd37","toSide":"top"}
 	]
 }
