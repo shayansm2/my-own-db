@@ -23,20 +23,20 @@ func (node BNode) setHeader(nodeType uint16, numberOfKeys uint16) {
 // pointers
 func (node BNode) getPointer(idx uint16) uint64 {
 	assert(idx < node.numberOfKeys())
-	pos := HEADER + 8*idx
+	pos := Header + 8*idx
 	return binary.LittleEndian.Uint64(node.data[pos:])
 }
 
 func (node BNode) setPointer(idx uint16, val uint64) {
 	assert(idx < node.numberOfKeys())
-	pos := HEADER + 8*idx
+	pos := Header + 8*idx
 	binary.LittleEndian.PutUint64(node.data[pos:], val)
 }
 
 // offset list
 func offsetPosition(node BNode, idx uint16) uint16 {
 	assert(1 <= idx && idx <= node.numberOfKeys())
-	return HEADER + 8*node.numberOfKeys() + 2*(idx-1)
+	return Header + 8*node.numberOfKeys() + 2*(idx-1)
 }
 
 func (node BNode) getOffset(idx uint16) uint16 {
@@ -53,7 +53,7 @@ func (node BNode) setOffset(idx uint16, offset uint16) {
 // key-values
 func (node BNode) kvPos(idx uint16) uint16 {
 	assert(idx <= node.numberOfKeys())
-	return HEADER + 8*node.numberOfKeys() + 2*node.numberOfKeys() + node.getOffset(idx)
+	return Header + 8*node.numberOfKeys() + 2*node.numberOfKeys() + node.getOffset(idx)
 }
 
 func (node BNode) getKey(idx uint16) []byte {

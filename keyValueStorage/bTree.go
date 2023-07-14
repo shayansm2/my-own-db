@@ -17,7 +17,7 @@ type BTree struct {
 var tree *BTree
 
 func init() {
-	node1max := HEADER + 8 + 2 + 4 + BtreeMaxKeySize + BtreeMaxValSize
+	node1max := Header + 8 + 2 + 4 + BtreeMaxKeySize + BtreeMaxValSize
 	assert(node1max <= BtreePageSize)
 	// todo init tree
 	tree = nil
@@ -124,26 +124,21 @@ func internalNodeInsert(new *BNode, node BNode, idx uint16, key []byte, val []by
 	// recursive insertion to the kid node
 	childNode = treeInsert(childNode, key, val)
 	// split the result
-	numberOfSplits, splitedNodes := nodeSplit3(childNode)
+	numberOfSplits, splitedNodes := splitNode(childNode)
 	// update the kid links
 	nodeReplaceKidN(new, node, idx, splitedNodes[:numberOfSplits]...)
 }
 
-// split a bigger-than-allowed node into two.
-// the second node always fits on a page.
-func nodeSplit2(left BNode, right BNode, old BNode) {
-	// code omitted... todo
-}
-
 // split a node if it's too big. the results are 1~3 nodes.
-func nodeSplit3(old BNode) (uint16, [3]BNode) {
-	if old.numberOfBytes() <= BtreePageSize {
-		old.data = old.data[:BtreePageSize]
-		return 1, [3]BNode{old}
+func splitNode(node BNode) (uint16, [3]BNode) {
+	if node.numberOfBytes() <= BtreePageSize {
+		node.data = node.data[:BtreePageSize]
+		return 1, [3]BNode{node}
 	}
+
 	left := BNode{make([]byte, 2*BtreePageSize)} // might be split later
 	right := BNode{make([]byte, BtreePageSize)}
-	nodeSplit2(left, right, old)
+	splitIntoTwoNodes(&left, &right, node)
 	if left.numberOfBytes() <= BtreePageSize {
 		left.data = left.data[:BtreePageSize]
 		return 2, [3]BNode{left, right}
@@ -151,9 +146,19 @@ func nodeSplit3(old BNode) (uint16, [3]BNode) {
 	// the left node is still too large
 	leftleft := BNode{make([]byte, BtreePageSize)}
 	middle := BNode{make([]byte, BtreePageSize)}
-	nodeSplit2(leftleft, middle, left)
+	splitIntoTwoNodes(&leftleft, &middle, left)
 	assert(leftleft.numberOfBytes() <= BtreePageSize)
 	return 3, [3]BNode{leftleft, middle, right}
+}
+
+// split a bigger-than-allowed node into two.
+// the second node always fits on a page.
+func splitIntoTwoNodes(left *BNode, right *BNode, old BNode) {
+	// get number of keys to split
+	//right.setHeader(old.getType(), )
+	//nodeAppendRange(right, old, 0, 0)
+	//
+	//left.setHeader(old.getType())
 }
 
 // copy multiple KVs into the position

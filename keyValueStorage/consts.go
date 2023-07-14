@@ -5,7 +5,7 @@ const (
 	BNodeLeaf     = 2 // leaf nodes with values
 )
 
-const HEADER = 4
+const Header = 4
 
 const BtreePageSize = 4096
 const BtreeMaxKeySize = 1000
