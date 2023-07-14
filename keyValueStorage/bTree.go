@@ -144,21 +144,33 @@ func splitNode(node BNode) (uint16, [3]BNode) {
 		return 2, [3]BNode{left, right}
 	}
 	// the left node is still too large
-	leftleft := BNode{make([]byte, BtreePageSize)}
+	leftLeft := BNode{make([]byte, BtreePageSize)}
 	middle := BNode{make([]byte, BtreePageSize)}
-	splitIntoTwoNodes(&leftleft, &middle, left)
-	assert(leftleft.numberOfBytes() <= BtreePageSize)
-	return 3, [3]BNode{leftleft, middle, right}
+	splitIntoTwoNodes(&leftLeft, &middle, left)
+	assert(leftLeft.numberOfBytes() <= BtreePageSize)
+	return 3, [3]BNode{leftLeft, middle, right}
 }
 
 // split a bigger-than-allowed node into two.
 // the second node always fits on a page.
 func splitIntoTwoNodes(left *BNode, right *BNode, old BNode) {
-	// get number of keys to split
-	//right.setHeader(old.getType(), )
-	//nodeAppendRange(right, old, 0, 0)
-	//
-	//left.setHeader(old.getType())
+	numberOfKeys := getSplitKeyIndex(old)
+
+	right.setHeader(old.getType(), numberOfKeys)
+	nodeAppendRange(right, old, 0, 0, numberOfKeys)
+
+	left.setHeader(old.getType(), old.numberOfKeys()-numberOfKeys)
+	nodeAppendRange(left, old, 0, numberOfKeys, old.numberOfKeys()-numberOfKeys)
+}
+
+// todo bisect
+func getSplitKeyIndex(node BNode) uint16 {
+	for i := uint16(1); i <= node.numberOfKeys(); i++ {
+		if node.kvPos(i) > BtreePageSize {
+			return i - 1
+		}
+	}
+	return node.numberOfKeys()
 }
 
 // copy multiple KVs into the position
