@@ -154,7 +154,8 @@ func splitNode(node BNode) (uint16, [3]BNode) {
 // split a bigger-than-allowed node into two.
 // the second node always fits on a page.
 func splitIntoTwoNodes(left *BNode, right *BNode, old BNode) {
-	numberOfKeys := getSplitKeyIndex(old)
+	numberOfKeys := bisectFindSplitKeyIndex(old)
+	assertThat(assertionArgs{condition: numberOfKeys == getSplitKeyIndex(old), message: "bisect search is wrong"}) // todo remove this
 
 	right.setHeader(old.getType(), numberOfKeys)
 	nodeAppendRange(right, old, 0, 0, numberOfKeys)
@@ -163,7 +164,6 @@ func splitIntoTwoNodes(left *BNode, right *BNode, old BNode) {
 	nodeAppendRange(left, old, 0, numberOfKeys, old.numberOfKeys()-numberOfKeys)
 }
 
-// todo bisect
 func getSplitKeyIndex(node BNode) uint16 {
 	for i := uint16(1); i <= node.numberOfKeys(); i++ {
 		if node.kvPos(i) > BtreePageSize {
@@ -171,6 +171,29 @@ func getSplitKeyIndex(node BNode) uint16 {
 		}
 	}
 	return node.numberOfKeys()
+}
+
+func bisectFindSplitKeyIndex(node BNode) uint16 {
+	start, end := uint16(0), node.numberOfKeys()-1
+	for start <= end {
+		mid := start + (end-start)/2
+
+		pageSize := node.kvPos(mid)
+
+		if pageSize == BtreePageSize {
+			return mid
+		}
+
+		if pageSize > BtreePageSize {
+			end = mid - 1
+		} else {
+			if end == start {
+				return mid
+			}
+			start = mid + 1
+		}
+	}
+	panic("no index found")
 }
 
 // copy multiple KVs into the position
