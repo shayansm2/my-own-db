@@ -16,7 +16,10 @@
 		{"type":"text","text":"add key values to the new node\n`func nodeAppendKV(new BNode, idx uint16, ptr uint64, key []byte, val []byte) {`","id":"8ae3cf04673032e8","x":2665,"y":710,"width":731,"height":60},
 		{"type":"text","text":"copy KVs after index to the new node\n`func nodeAppendRange(new BNode, old BNode, dstNew uint16, srcOld uint16, n uint16) {`","id":"f6f1f3a68eaa3795","x":2641,"y":850,"width":780,"height":60},
 		{"type":"text","text":"`func internalNodeInsert(new BNode, node BNode, idx uint16, key []byte, val []byte) {`","id":"01243a84990a2f84","x":340,"y":640,"width":780,"height":56},
-		{"type":"text","text":"insert key value into tree\n- tree\n- key\n- value","id":"763c32ef7b654585","x":-640,"y":-680,"width":250,"height":180}
+		{"type":"text","text":"insert key value into tree\n- tree\n- key\n- value","id":"763c32ef7b654585","x":-640,"y":-680,"width":250,"height":180},
+		{"id":"6bb3038c7e7cec5d","x":-60,"y":855,"width":337,"height":50,"type":"text","text":"`node = node.child`"},
+		{"id":"3d1eea40eb29dfd0","x":-90,"y":1002,"width":397,"height":50,"type":"text","text":"`newNode = treeInsert(node, key, val)`"},
+		{"id":"c5f06f66c02c30c8","x":-128,"y":1140,"width":474,"height":176,"type":"text","text":"split the new node if it's larger than page size\n- newNode\n\n-> []nodes\n`func splitNode(node BNode) (uint16, [3]BNode) {`"}
 	],
 	"edges":[
 		{"id":"24ff12bf4ed0c83c","fromNode":"271f1c3d69891ee3","fromSide":"bottom","toNode":"8496c0ae0c6614e4","toSide":"top"},
@@ -35,7 +38,10 @@
 		{"id":"c82e7c5aec9210de","fromNode":"8088261e304d9a5b","fromSide":"right","toNode":"69908c9263b3658d","toSide":"top"},
 		{"id":"dc7898f2b7d94f6a","fromNode":"ee93f2bde8d91729","fromSide":"right","toNode":"69908c9263b3658d","toSide":"top"},
 		{"id":"039a80cb2a632dcb","fromNode":"763c32ef7b654585","fromSide":"right","toNode":"a0dc0eb38de64fb4","toSide":"top","label":"node = root"},
-		{"id":"d9fd4b4228575ca7","fromNode":"01243a84990a2f84","fromSide":"left","toNode":"a0dc0eb38de64fb4","toSide":"bottom","label":"node = node.child"},
-		{"id":"ecd14f112a56f02a","fromNode":"c4b8aac408a4af05","fromSide":"bottom","toNode":"01243a84990a2f84","toSide":"right"}
+		{"id":"ecd14f112a56f02a","fromNode":"c4b8aac408a4af05","fromSide":"bottom","toNode":"01243a84990a2f84","toSide":"right"},
+		{"id":"97cbcf3e45aaf631","fromNode":"6bb3038c7e7cec5d","fromSide":"bottom","toNode":"3d1eea40eb29dfd0","toSide":"top"},
+		{"id":"0b62e758134ab198","fromNode":"3d1eea40eb29dfd0","fromSide":"bottom","toNode":"c5f06f66c02c30c8","toSide":"top"},
+		{"id":"94d119f852b9ae83","fromNode":"01243a84990a2f84","fromSide":"left","toNode":"6bb3038c7e7cec5d","toSide":"top"},
+		{"id":"b8fccd950ee3ec31","fromNode":"3d1eea40eb29dfd0","fromSide":"left","toNode":"a0dc0eb38de64fb4","toSide":"bottom","toEnd":"none","color":"5","label":"="}
 	]
 }

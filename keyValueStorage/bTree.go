@@ -88,7 +88,7 @@ func insertIntoNode(node BNode, key []byte, val []byte, index uint16) BNode {
 			leafNodeUpdate(&newNode, node, index, key, val)
 		} else {
 			// insert it after the position.
-			leafNodeInsert(&newNode, node, index+1, key, val) // question: can it exceed the node size?
+			leafNodeInsert(&newNode, node, index+1, key, val)
 		}
 	case BNodeInternal:
 		// internal node, insert it to a kid node.
